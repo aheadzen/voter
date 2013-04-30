@@ -17,23 +17,76 @@ function add_stylesheet_for_votes_layout()
 }
 function voter_layout_top_area()
 {
-	global $post;
+	global $post,$bp;
 	$post_type = $post->post_type;
 	if($post_type == "page")
 	{
-		$user_id = get_current_user_id();
-		$component_name = "blog";
-		$type = $post->post_type;
-		$item_id = 1;
-		$secondary_item_id = $post->ID;
+		if(bp_is_blog_page())
+		{
+			$user_id = get_current_user_id();
+			$component_name = "blog";
+			$type = $post->post_type;
+			$item_id = 0;
+			$secondary_item_id = $post->ID;
+		}
+		else
+		{
+			$group_id = $bp->groups->current_group->id;
+			if(isset($group_id) && $group_id != "")
+			{
+				$user_id = get_current_user_id();
+				$component_name = "buddypress";
+				$type = $post->post_title;
+				$item_id = $post->ID;
+				$secondary_item_id = $group_id;
+			}
+		}
 	}
 	else if($post_type == "post")
 	{
-		$user_id = get_current_user_id();
-		$component_name = "blog";
-		$type = $post->post_type;
-		$item_id = 1;
-		$secondary_item_id = $post->ID;
+		if(bp_is_blog_page())
+		{
+			$user_id = get_current_user_id();
+			$component_name = "blog";
+			$type = $post->post_type;
+			$item_id = 0;
+			$secondary_item_id = $post->ID;
+		}
+		else
+		{
+			$group_id = $bp->groups->current_group->id;
+			if(isset($group_id) && $group_id != "")
+			{
+				$user_id = get_current_user_id();
+				$component_name = "buddypress";
+				$type = $post->post_title;
+				$item_id = $post->ID;
+				$secondary_item_id = $group_id;
+			}
+		}
+	}
+	else
+	{	
+		if(bp_is_blog_page())
+		{
+			$user_id = get_current_user_id();
+			$component_name = "blog";
+			$type = $post->post_type;
+			$item_id = 0;
+			$secondary_item_id = $post->ID;
+		}
+		else
+		{
+			$group_id = $bp->groups->current_group->id;
+			if(isset($group_id) && $group_id != "")
+			{
+				$user_id = get_current_user_id();
+				$component_name = "buddypress";
+				$type = $post->post_title;
+				$item_id = $post->ID;
+				$secondary_item_id = $group_id;
+			}
+		}
 	}
 	$current_user_votes = voter_get_current_user_votes_top_area($user_id,$component_name,$type,$item_id,$secondary_item_id);
 	
@@ -47,25 +100,137 @@ function voter_layout_top_area()
 }
 function voter_layout_bottom_area()
 {
-	global $post;	
+	global $post,$bp;
 	$post_type = $post->post_type;
 	$comment_id = get_comment_ID();
-
 	if($post_type == "page")
 	{
-		$user_id = get_current_user_id();
-		$component_name = "blog";
-		$type = $post->post_type;
-		$item_id = $post->ID;
-		$secondary_item_id = $comment_id;
+		if(bp_is_blog_page())
+		{
+			$user_id = get_current_user_id();
+			$component_name = "blog";
+			$type = $post->post_type;
+			$item_id = $post->ID;
+			$secondary_item_id = $comment_id;		
+		}
+		else
+		{
+			$activity_id = bp_get_activity_id();
+			$group_id = $bp->groups->current_group->id;
+			if(isset($activity_id) && $activity_id != "")
+			{
+				$user_id = get_current_user_id();
+				$component_name = "buddypress";
+				$type = $post->post_title;
+				$item_id = $post->ID;
+				$activity_id = bp_get_activity_id();
+				$secondary_item_id = $activity_id;
+			}			
+			else if(isset($group_id) && $group_id != "")
+			{
+				$user_id = get_current_user_id();
+				$component_name = "buddypress";
+				$type = $post->post_title;
+				$item_id = $post->ID;
+				$secondary_item_id = $group_id;
+			}
+			else
+			{
+				// bp_get_member_user_id
+				$user_id = get_current_user_id();
+				$component_name = "buddypress";
+				$type = $post->post_title;
+				$item_id = $post->ID;
+				$member_id = get_current_user_id();
+				$secondary_item_id = $member_id;
+			}		
+		}	
 	}
 	else if($post_type == "post")
 	{
-		$user_id = get_current_user_id();
-		$component_name = "blog";
-		$type = $post->post_type;
-		$item_id = $post->ID;
-		$secondary_item_id = $comment_id;
+		if(bp_is_blog_page())
+		{
+			$user_id = get_current_user_id();
+			$component_name = "blog";
+			$type = $post->post_type;
+			$item_id = $post->ID;
+			$secondary_item_id = $comment_id;
+		}
+		else
+		{
+			$activity_id = bp_get_activity_id();
+			$group_id = $bp->groups->current_group->id;
+			if(isset($activity_id) && $activity_id != "")
+			{
+				$user_id = get_current_user_id();
+				$component_name = "buddypress";
+				$type = $post->post_title;
+				$item_id = $post->ID;
+				$activity_id = bp_get_activity_id();
+				$secondary_item_id = $activity_id;
+			}
+			else if(isset($group_id) && $group_id != "")
+			{
+				$user_id = get_current_user_id();
+				$component_name = "buddypress";
+				$type = $post->post_title;
+				$item_id = $post->ID;
+				$secondary_item_id = $group_id;
+			}
+			else
+			{
+				// bp_get_member_user_id
+				$user_id = get_current_user_id();
+				$component_name = "buddypress";
+				$type = $post->post_title;
+				$item_id = $post->ID;
+				$member_id = get_current_user_id();
+				$secondary_item_id = $member_id;
+			}		
+		}	
+	}
+	else
+	{
+		if(bp_is_blog_page())
+		{
+			$user_id = get_current_user_id();
+			$component_name = "blog";
+			$type = $post->post_type;
+			$item_id = $post->ID;
+			$secondary_item_id = $comment_id;
+		}
+		else
+		{
+			$activity_id = bp_get_activity_id();
+			$group_id = $bp->groups->current_group->id;
+			if(isset($activity_id) && $activity_id != "")
+			{
+				$user_id = get_current_user_id();
+				$component_name = "buddypress";
+				$type = $post->post_title;
+				$item_id = $post->ID;
+				$activity_id = bp_get_activity_id();
+				$secondary_item_id = $activity_id;
+			}
+			else if(isset($group_id) && $group_id != "")
+			{
+				$user_id = get_current_user_id();
+				$component_name = "buddypress";
+				$type = $post->post_title;
+				$item_id = $post->ID;
+				$secondary_item_id = $group_id;
+			}			
+			else
+			{
+				// bp_get_member_user_id
+				$user_id = get_current_user_id();
+				$component_name = "buddypress";
+				$type = $post->post_title;
+				$item_id = $post->ID;
+				$member_id = get_current_user_id();
+				$secondary_item_id = $member_id;
+			}
+		}
 	}
 
 	$current_user_votes = voter_get_current_user_votes_bottom_area($user_id,$component_name,$type,$item_id,$secondary_item_id);
@@ -79,13 +244,36 @@ function voter_layout_bottom_area()
 }
 function voter_vote_link_bottom($post_id,$type,$user_votes = false)
 {
-		global $post;
-		$post_type = $post->post_type;
-		$comment_id = get_comment_ID();
+		global $post,$bp;
+		if(bp_is_blog_page())
+		{
+			$post_type = $post->post_type;
+			$comment_id = get_comment_ID();			
+		}
+		else
+		{		
+			$activity_id = bp_get_activity_id();
+			$group_id = $bp->groups->current_group->id;
+			if(isset($activity_id) && $activity_id != "")
+			{
+				$post_type = $post->post_title;
+				$comment_id = bp_get_activity_id();
+			}
+			else if(isset($group_id) && $group_id != "")
+			{
+				$post_type = $post->post_title;
+				$comment_id = $bp->groups->current_group->id;
+			}
+			else
+			{
+				$post_type = $post->post_title;
+				$comment_id = get_current_user_id();
+			}			
+		}
 
 		$vote_id = 0;
 		if( !empty( $user_votes[$comment_id] ) )
-			$vote_id = $user_votes[$comment_id]->id;			
+			$vote_id = $user_votes[$comment_id]->id;
 			
 		if( $type == 'up' )
 		{
@@ -107,7 +295,15 @@ function voter_vote_link_bottom($post_id,$type,$user_votes = false)
 		if($vote_id == 0 && is_user_logged_in())
 		{
 			$user_id = get_current_user_id();
-			$params = array('user_id' => $user_id, 'component' => 'blog','type' => $post_type,'action' => $type,'item_id' => $post_id,'secondary_item_id' => $comment_id);
+			if(bp_is_blog_page())
+			{
+				$params = array('user_id' => $user_id, 'component' => 'blog','type' => $post_type,'action' => $type,'item_id' => $post_id,'secondary_item_id' => $comment_id);
+			}
+			else
+			{
+				$params = array('user_id' => $user_id, 'component' => 'buddypress','type' => $post_type,'action' => $type,'item_id' => $post_id,'secondary_item_id' => $comment_id);
+
+			}	
 			$url0 = get_permalink($post_id);
 			$url = esc_url(wp_nonce_url(add_query_arg($params,$url0),'toggle-vote_' . $post_id));
 			echo '<a rel="nofollow" class="engagement ' . $class . '" href="' . $url . '"></a>';
@@ -119,8 +315,22 @@ function voter_vote_link_bottom($post_id,$type,$user_votes = false)
 }
 function voter_vote_link($post_id,$type,$user_votes = false)
 {
-		global $post;
-		$post_type = $post->post_type;
+		global $post,$bp;
+		
+		if(bp_is_blog_page())
+		{
+			$post_type = $post->post_type;
+			$secondary_item_id = $post_id;
+		}
+		else
+		{
+			$group_id = $bp->groups->current_group->id;
+			if(isset($group_id) && $group_id != "")
+			{
+				$post_type = $post->post_title;
+				$secondary_item_id = $group_id;
+			}
+		}
 
 		$vote_id = 0;
 		if( !empty( $user_votes[$post_id] ) )
@@ -146,8 +356,15 @@ function voter_vote_link($post_id,$type,$user_votes = false)
 		if($vote_id == 0 && is_user_logged_in())
 		{
 			$user_id = get_current_user_id();
-			$params = array('user_id' => $user_id, 'component' => 'blog','type' => $post_type,'action' => $type,'item_id' => 1,'secondary_item_id' => $post_id);
-			
+			if(bp_is_blog_page())
+			{
+				$params = array('user_id' => $user_id, 'component' => 'blog','type' => $post_type,'action' => $type,'item_id' => 0,'secondary_item_id' => $secondary_item_id);
+			}
+			else
+			{
+				$params = array('user_id' => $user_id, 'component' => 'buddypress','type' => $post_type,'action' => $type,'item_id' => 0,'secondary_item_id' => $secondary_item_id);
+
+			}	
 			$url0 = get_permalink($post_id);
 			$url = esc_url(wp_nonce_url(add_query_arg($params,$url0),'toggle-vote_' . $post_id));
 			echo '<a rel="nofollow" class="engagement ' . $class . '" href="' . $url . '"></a>';
@@ -177,8 +394,30 @@ function voter_get_current_user_votes_bottom_area($user_id,$component_name,$type
 }
 function get_specific_user($user_id,$component_name,$type,$item_id,$secondary_item_id)
 {
-	global $wpdb;
-	$current_user = $wpdb->get_results("SELECT secondary_item_id,id,user_id,component,type,action,item_id FROM ask_votes WHERE user_id = $user_id AND item_id = $item_id AND component = '".$component_name."' AND type = '".$type."' AND secondary_item_id = $secondary_item_id" , OBJECT_K );
+	global $wpdb, $bp;
+		
+	if(bp_is_blog_page())
+	{
+		$current_user = $wpdb->get_results("SELECT secondary_item_id,id,user_id,component,type,action,item_id FROM ask_votes WHERE user_id = $user_id AND item_id = $item_id AND component = '".$component_name."' AND type = '".$type."' AND secondary_item_id = $secondary_item_id" , OBJECT_K );
+	}
+	else
+	{
+		$activity_id = bp_get_activity_id();
+		$group_id = $bp->groups->current_group->id;
+		if(isset($activity_id) && $activity_id != "")
+		{
+			$current_user = $wpdb->get_results("SELECT secondary_item_id,id,user_id,component,type,action,item_id FROM ask_votes WHERE user_id = $user_id AND component = '".$component_name."' AND secondary_item_id = $secondary_item_id" , OBJECT_K );
+		}
+		else if(isset($group_id) && $group_id != "")
+		{
+			$current_user = $wpdb->get_results("SELECT secondary_item_id,id,user_id,component,type,action,item_id FROM ask_votes WHERE user_id = $user_id AND item_id = $item_id AND component = '".$component_name."' AND type = '".$type."' AND secondary_item_id = $secondary_item_id" , OBJECT_K );
+		}
+		else
+		{
+			$current_user = $wpdb->get_results("SELECT secondary_item_id,id,user_id,component,type,action,item_id FROM ask_votes WHERE user_id = $user_id AND item_id = 0 AND component = '".$component_name."' AND type = '".$type."' AND secondary_item_id = $secondary_item_id" , OBJECT_K );
+		}
+	
+	}
 	return $current_user;
 }
 function voter_function_giving_votes_ajax()
@@ -207,4 +446,9 @@ add_filter('the_content','voter_layout_top_area');
 add_action('wp_enqueue_scripts', 'add_js_for_vote');
 add_action('wp_ajax_up', 'voter_function_giving_votes_ajax');
 add_action('init', 'voter_function_giving_votes');
+add_filter('woocommerce_product_review_comment_form_args', 'voter_product_review');
+//add_action('bp_insert_activity_meta','voter_activity_screen');
+add_action('bp_activity_entry_meta','voter_layout_bottom_area');
+add_action('bp_after_profile_field_content','voter_layout_bottom_area');
+add_action('bp_after_group_header','voter_layout_bottom_area');
 ?>
