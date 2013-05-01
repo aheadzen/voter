@@ -117,6 +117,8 @@ function voter_layout_bottom_area()
 		{
 			$activity_id = bp_get_activity_id();
 			$group_id = $bp->groups->current_group->id;
+			$member_id = $bp->displayed_user->id;
+						
 			if(isset($activity_id) && $activity_id != "")
 			{
 				$user_id = get_current_user_id();
@@ -134,6 +136,14 @@ function voter_layout_bottom_area()
 				$item_id = $post->ID;
 				$secondary_item_id = $group_id;
 			}
+			else if(isset($member_id) && $member_id != "")
+			{
+				$user_id = get_current_user_id();
+				$component_name = "buddypress";
+				$type = $post->post_title;
+				$item_id = $post->ID;
+				$secondary_item_id = $member_id;
+			}			
 			else
 			{
 				// bp_get_member_user_id
@@ -160,6 +170,7 @@ function voter_layout_bottom_area()
 		{
 			$activity_id = bp_get_activity_id();
 			$group_id = $bp->groups->current_group->id;
+			$member_id = $bp->displayed_user->id;
 			if(isset($activity_id) && $activity_id != "")
 			{
 				$user_id = get_current_user_id();
@@ -176,6 +187,14 @@ function voter_layout_bottom_area()
 				$type = $post->post_title;
 				$item_id = $post->ID;
 				$secondary_item_id = $group_id;
+			}
+			else if(isset($member_id) && $member_id != "")
+			{
+				$user_id = get_current_user_id();
+				$component_name = "buddypress";
+				$type = $post->post_title;
+				$item_id = $post->ID;
+				$secondary_item_id = $member_id;
 			}
 			else
 			{
@@ -203,6 +222,7 @@ function voter_layout_bottom_area()
 		{
 			$activity_id = bp_get_activity_id();
 			$group_id = $bp->groups->current_group->id;
+			$member_id = $bp->displayed_user->id;
 			if(isset($activity_id) && $activity_id != "")
 			{
 				$user_id = get_current_user_id();
@@ -219,7 +239,15 @@ function voter_layout_bottom_area()
 				$type = $post->post_title;
 				$item_id = $post->ID;
 				$secondary_item_id = $group_id;
-			}			
+			}
+			else if(isset($member_id) && $member_id != "")
+			{
+				$user_id = get_current_user_id();
+				$component_name = "buddypress";
+				$type = $post->post_title;
+				$item_id = $post->ID;
+				$secondary_item_id = $member_id;
+			}
 			else
 			{
 				// bp_get_member_user_id
@@ -232,8 +260,10 @@ function voter_layout_bottom_area()
 			}
 		}
 	}
+	
 
 	$current_user_votes = voter_get_current_user_votes_bottom_area($user_id,$component_name,$type,$item_id,$secondary_item_id);
+	
 	echo '<div class="vote alignright">';
 		echo voter_vote_link_bottom($post->ID,'up',$current_user_votes);
 			echo '<span class="vote-count-post">';
@@ -254,6 +284,7 @@ function voter_vote_link_bottom($post_id,$type,$user_votes = false)
 		{		
 			$activity_id = bp_get_activity_id();
 			$group_id = $bp->groups->current_group->id;
+			$member_id = $bp->displayed_user->id;
 			if(isset($activity_id) && $activity_id != "")
 			{
 				$post_type = $post->post_title;
@@ -263,6 +294,11 @@ function voter_vote_link_bottom($post_id,$type,$user_votes = false)
 			{
 				$post_type = $post->post_title;
 				$comment_id = $bp->groups->current_group->id;
+			}
+			else if(isset($member_id) && $member_id != "")
+			{
+				$post_type = $post->post_title;
+				$comment_id = $bp->displayed_user->id;
 			}
 			else
 			{
@@ -404,11 +440,17 @@ function get_specific_user($user_id,$component_name,$type,$item_id,$secondary_it
 	{
 		$activity_id = bp_get_activity_id();
 		$group_id = $bp->groups->current_group->id;
+		$member_id = $bp->displayed_user->id;
+		
 		if(isset($activity_id) && $activity_id != "")
 		{
-			$current_user = $wpdb->get_results("SELECT secondary_item_id,id,user_id,component,type,action,item_id FROM ask_votes WHERE user_id = $user_id AND component = '".$component_name."' AND secondary_item_id = $secondary_item_id" , OBJECT_K );
+			$current_user = $wpdb->get_results("SELECT secondary_item_id,id,user_id,component,type,action,item_id FROM ask_votes WHERE user_id = $user_id AND component = '".$component_name."' AND type = '".$type."' AND secondary_item_id = $secondary_item_id" , OBJECT_K );
 		}
 		else if(isset($group_id) && $group_id != "")
+		{
+			$current_user = $wpdb->get_results("SELECT secondary_item_id,id,user_id,component,type,action,item_id FROM ask_votes WHERE user_id = $user_id AND item_id = $item_id AND component = '".$component_name."' AND type = '".$type."' AND secondary_item_id = $secondary_item_id" , OBJECT_K );
+		}
+		else if(isset($member_id) && $member_id != "")
 		{
 			$current_user = $wpdb->get_results("SELECT secondary_item_id,id,user_id,component,type,action,item_id FROM ask_votes WHERE user_id = $user_id AND item_id = $item_id AND component = '".$component_name."' AND type = '".$type."' AND secondary_item_id = $secondary_item_id" , OBJECT_K );
 		}
