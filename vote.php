@@ -100,12 +100,30 @@ function voter_layout_top_area()
 }
 function voter_layout_bottom_area()
 {
-	global $post,$bp;
-	$post_type = $post->post_type;
+	global $post,$bp,$thread_template,$bbP,$forum_id;
+	$post_type = $post->post_type;	
 	$comment_id = get_comment_ID();
+
+	if($bp)
+	{
+		$check_url_for_topic = $bp->unfiltered_uri;
+		if (in_array("topic", $check_url_for_topic))
+		{
+			$topic_id = 1;
+		}
+	}	
+
+	//$topic_id = bbp_get_reply_id();	
+	//$topic_id = bbp_reply_topic_id();	
+	//$topic_reply_id = bbp_get_reply_topic_id();
+	//echo "Topic ID :- " . $topic_id . "<br>";
+	//echo "Topic Reply ID :- " . $topic_reply_id . "<br>";
+	//exit;
+
+	
 	if($post_type == "page")
 	{
-		if(bp_is_blog_page())
+		if(bp_is_blog_page() && (!isset($topic_id) && $topic_id == ""))
 		{
 			$user_id = get_current_user_id();
 			$component_name = "blog";
@@ -123,27 +141,46 @@ function voter_layout_bottom_area()
 			{
 				$user_id = get_current_user_id();
 				$component_name = "buddypress";
-				$type = $post->post_title;
+				$type = $bp->current_component;
 				$item_id = $post->ID;
 				$activity_id = bp_get_activity_id();
 				$secondary_item_id = $activity_id;
 			}			
-			else if(isset($group_id) && $group_id != "")
-			{
+			else if(isset($group_id) && $group_id != "" && (!isset($topic_id) && $topic_id == ""))
+			{			
 				$user_id = get_current_user_id();
 				$component_name = "buddypress";
-				$type = $post->post_title;
+				$type = $bp->current_component;
 				$item_id = $post->ID;
 				$secondary_item_id = $group_id;
 			}
 			else if(isset($member_id) && $member_id != "")
 			{
+				if(strtolower($bp->current_component) == "profile")
+				{
+					$user_id = get_current_user_id();
+					$component_name = "buddypress";
+					$type = $bp->current_component;
+					$item_id = $post->ID;
+					$secondary_item_id = $member_id;
+				}
+				else if(strtolower($bp->current_component) == "messages")
+				{
+					$user_id = get_current_user_id();
+					$component_name = "buddypress";
+					$type = $bp->current_component;
+					$item_id = $post->ID;
+					$secondary_item_id = $thread_template->message->id;
+				}
+			}
+			else if(isset($topic_id) && $topic_id != "")
+			{
 				$user_id = get_current_user_id();
 				$component_name = "buddypress";
-				$type = $post->post_title;
+				$type = "forum";
 				$item_id = $post->ID;
-				$secondary_item_id = $member_id;
-			}			
+				$secondary_item_id = $post->ID;
+			}
 			else
 			{
 				// bp_get_member_user_id
@@ -156,7 +193,7 @@ function voter_layout_bottom_area()
 			}		
 		}	
 	}
-	else if($post_type == "post")
+	else if($post_type == "post" && (!isset($topic_id) && $topic_id == ""))
 	{
 		if(bp_is_blog_page())
 		{
@@ -171,30 +208,50 @@ function voter_layout_bottom_area()
 			$activity_id = bp_get_activity_id();
 			$group_id = $bp->groups->current_group->id;
 			$member_id = $bp->displayed_user->id;
+						
 			if(isset($activity_id) && $activity_id != "")
 			{
 				$user_id = get_current_user_id();
 				$component_name = "buddypress";
-				$type = $post->post_title;
+				$type = $bp->current_component;
 				$item_id = $post->ID;
 				$activity_id = bp_get_activity_id();
 				$secondary_item_id = $activity_id;
-			}
-			else if(isset($group_id) && $group_id != "")
-			{
+			}			
+			else if(isset($group_id) && $group_id != "" && (!isset($topic_id) && $topic_id == ""))
+			{			
 				$user_id = get_current_user_id();
 				$component_name = "buddypress";
-				$type = $post->post_title;
+				$type = $bp->current_component;
 				$item_id = $post->ID;
 				$secondary_item_id = $group_id;
 			}
 			else if(isset($member_id) && $member_id != "")
 			{
+				if(strtolower($bp->current_component) == "profile")
+				{
+					$user_id = get_current_user_id();
+					$component_name = "buddypress";
+					$type = $bp->current_component;
+					$item_id = $post->ID;
+					$secondary_item_id = $member_id;
+				}
+				else if(strtolower($bp->current_component) == "messages")
+				{
+					$user_id = get_current_user_id();
+					$component_name = "buddypress";
+					$type = $bp->current_component;
+					$item_id = $post->ID;
+					$secondary_item_id = $thread_template->message->id;
+				}
+			}
+			else if(isset($topic_id) && $topic_id != "")
+			{
 				$user_id = get_current_user_id();
 				$component_name = "buddypress";
-				$type = $post->post_title;
+				$type = "forum";
 				$item_id = $post->ID;
-				$secondary_item_id = $member_id;
+				$secondary_item_id = $post->ID;
 			}
 			else
 			{
@@ -205,12 +262,12 @@ function voter_layout_bottom_area()
 				$item_id = $post->ID;
 				$member_id = get_current_user_id();
 				$secondary_item_id = $member_id;
-			}		
+			}
 		}	
 	}
 	else
 	{
-		if(bp_is_blog_page())
+		if(bp_is_blog_page() && (!isset($topic_id) && $topic_id == ""))
 		{
 			$user_id = get_current_user_id();
 			$component_name = "blog";
@@ -224,29 +281,48 @@ function voter_layout_bottom_area()
 			$group_id = $bp->groups->current_group->id;
 			$member_id = $bp->displayed_user->id;
 			if(isset($activity_id) && $activity_id != "")
-			{
+			{				
 				$user_id = get_current_user_id();
 				$component_name = "buddypress";
-				$type = $post->post_title;
+				$type = $bp->current_component;
 				$item_id = $post->ID;
 				$activity_id = bp_get_activity_id();
 				$secondary_item_id = $activity_id;
-			}
-			else if(isset($group_id) && $group_id != "")
+			}			
+			else if(isset($group_id) && $group_id != "" && (!isset($topic_id) && $topic_id == ""))
 			{
 				$user_id = get_current_user_id();
 				$component_name = "buddypress";
-				$type = $post->post_title;
+				$type = $bp->current_component;
 				$item_id = $post->ID;
 				$secondary_item_id = $group_id;
 			}
 			else if(isset($member_id) && $member_id != "")
 			{
+				if(strtolower($bp->current_component) == "profile")
+				{
+					$user_id = get_current_user_id();
+					$component_name = "buddypress";
+					$type = $bp->current_component;
+					$item_id = $post->ID;
+					$secondary_item_id = $member_id;
+				}
+				else if(strtolower($bp->current_component) == "messages")
+				{
+					$user_id = get_current_user_id();
+					$component_name = "buddypress";
+					$type = $bp->current_component;
+					$item_id = $post->ID;
+					$secondary_item_id = $thread_template->message->id;
+				}
+			}
+			else if(isset($topic_id) && $topic_id != "")
+			{
 				$user_id = get_current_user_id();
 				$component_name = "buddypress";
-				$type = $post->post_title;
+				$type = "forum";
 				$item_id = $post->ID;
-				$secondary_item_id = $member_id;
+				$secondary_item_id = $post->ID;
 			}
 			else
 			{
@@ -262,8 +338,8 @@ function voter_layout_bottom_area()
 	}
 	
 
-	$current_user_votes = voter_get_current_user_votes_bottom_area($user_id,$component_name,$type,$item_id,$secondary_item_id);
-	
+	$current_user_votes = voter_get_current_user_votes_bottom_area($user_id,$component_name,$type,$item_id,$secondary_item_id);	
+		
 	echo '<div class="vote alignright">';
 		echo voter_vote_link_bottom($post->ID,'up',$current_user_votes);
 			echo '<span class="vote-count-post">';
@@ -274,11 +350,21 @@ function voter_layout_bottom_area()
 }
 function voter_vote_link_bottom($post_id,$type,$user_votes = false)
 {
-		global $post,$bp;
-		if(bp_is_blog_page())
+		global $post,$bp,$thread_template;
+		
+		if($bp)
+		{
+			$check_url_for_topic = $bp->unfiltered_uri;
+			if (in_array("topic", $check_url_for_topic))
+			{
+				$topic_id = 1;
+			}
+		}		
+		
+		if(bp_is_blog_page() && (!isset($topic_id) && $topic_id == ""))
 		{
 			$post_type = $post->post_type;
-			$comment_id = get_comment_ID();			
+			$comment_id = get_comment_ID();
 		}
 		else
 		{		
@@ -290,16 +376,29 @@ function voter_vote_link_bottom($post_id,$type,$user_votes = false)
 				$post_type = $post->post_title;
 				$comment_id = bp_get_activity_id();
 			}
-			else if(isset($group_id) && $group_id != "")
+			else if(isset($group_id) && $group_id != "" && (!isset($topic_id) && $topic_id == ""))
 			{
 				$post_type = $post->post_title;
 				$comment_id = $bp->groups->current_group->id;
 			}
 			else if(isset($member_id) && $member_id != "")
-			{
-				$post_type = $post->post_title;
-				$comment_id = $bp->displayed_user->id;
+			{								
+				if(strtolower($bp->current_component) == "profile")
+				{
+					$post_type = $bp->current_component;
+					$comment_id = $bp->displayed_user->id;
+				}
+				else if(strtolower($bp->current_component) == "messages")
+				{
+					$post_type = $bp->current_component;
+					$comment_id = $thread_template->message->id;
+				}
 			}
+			else if(isset($topic_id) && $topic_id != "")
+			{                                                     
+				$post_type = "forum";
+				$comment_id = $post->ID;
+			}			
 			else
 			{
 				$post_type = $post->post_title;
@@ -331,9 +430,13 @@ function voter_vote_link_bottom($post_id,$type,$user_votes = false)
 		if($vote_id == 0 && is_user_logged_in())
 		{
 			$user_id = get_current_user_id();
-			if(bp_is_blog_page())
+			if(bp_is_blog_page() && (!isset($topic_id) && $topic_id == ""))
 			{
 				$params = array('user_id' => $user_id, 'component' => 'blog','type' => $post_type,'action' => $type,'item_id' => $post_id,'secondary_item_id' => $comment_id);
+			}
+			else if(isset($topic_id) && $topic_id != "")
+			{				
+				$params = array('user_id' => $user_id, 'component' => 'buddypress','type' => 'forum','action' => $type,'item_id' => $post_id,'secondary_item_id' => $comment_id);
 			}
 			else
 			{
@@ -431,6 +534,20 @@ function voter_get_current_user_votes_bottom_area($user_id,$component_name,$type
 function get_specific_user($user_id,$component_name,$type,$item_id,$secondary_item_id)
 {
 	global $wpdb, $bp;
+	/*echo $user_id . "<br>";
+	echo $component_name . "<br>";
+	echo $type . "<br>";
+	echo $item_id . "<br>";
+	echo $secondary_item_id . "<br>";*/
+	
+	if($bp)
+	{
+		$check_url_for_topic = $bp->unfiltered_uri;
+		if (in_array("topic", $check_url_for_topic))
+		{
+			$topic_id = 1;
+		}
+	}
 		
 	if(bp_is_blog_page())
 	{
@@ -446,7 +563,7 @@ function get_specific_user($user_id,$component_name,$type,$item_id,$secondary_it
 		{
 			$current_user = $wpdb->get_results("SELECT secondary_item_id,id,user_id,component,type,action,item_id FROM ask_votes WHERE user_id = $user_id AND component = '".$component_name."' AND type = '".$type."' AND secondary_item_id = $secondary_item_id" , OBJECT_K );
 		}
-		else if(isset($group_id) && $group_id != "")
+		else if(isset($group_id) && $group_id != "" && (!isset($topic_id) && $topic_id == ""))
 		{
 			$current_user = $wpdb->get_results("SELECT secondary_item_id,id,user_id,component,type,action,item_id FROM ask_votes WHERE user_id = $user_id AND item_id = $item_id AND component = '".$component_name."' AND type = '".$type."' AND secondary_item_id = $secondary_item_id" , OBJECT_K );
 		}
@@ -454,6 +571,10 @@ function get_specific_user($user_id,$component_name,$type,$item_id,$secondary_it
 		{
 			$current_user = $wpdb->get_results("SELECT secondary_item_id,id,user_id,component,type,action,item_id FROM ask_votes WHERE user_id = $user_id AND item_id = $item_id AND component = '".$component_name."' AND type = '".$type."' AND secondary_item_id = $secondary_item_id" , OBJECT_K );
 		}
+		else if(isset($topic_id) && $topic_id != "")
+		{
+			$current_user = $wpdb->get_results("SELECT secondary_item_id,id,user_id,component,type,action,item_id FROM ask_votes WHERE user_id = $user_id AND item_id = $item_id AND component = '".$component_name."' AND type = '".$type."' AND secondary_item_id = $secondary_item_id" , OBJECT_K );
+		}		
 		else
 		{
 			$current_user = $wpdb->get_results("SELECT secondary_item_id,id,user_id,component,type,action,item_id FROM ask_votes WHERE user_id = $user_id AND item_id = 0 AND component = '".$component_name."' AND type = '".$type."' AND secondary_item_id = $secondary_item_id" , OBJECT_K );
@@ -489,8 +610,10 @@ add_action('wp_enqueue_scripts', 'add_js_for_vote');
 add_action('wp_ajax_up', 'voter_function_giving_votes_ajax');
 add_action('init', 'voter_function_giving_votes');
 add_filter('woocommerce_product_review_comment_form_args', 'voter_product_review');
-//add_action('bp_insert_activity_meta','voter_activity_screen');
 add_action('bp_activity_entry_meta','voter_layout_bottom_area');
 add_action('bp_after_profile_field_content','voter_layout_bottom_area');
 add_action('bp_after_group_header','voter_layout_bottom_area');
+add_action('bp_after_message_content','voter_layout_bottom_area');
+//add_action('bp_group_forum_post_meta','voter_layout_bottom_area');
+add_action('bbp_theme_before_reply_author_details','voter_layout_bottom_area');
 ?>
