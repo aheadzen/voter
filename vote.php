@@ -15,7 +15,7 @@ function add_stylesheet_for_votes_layout()
 {
 	wp_enqueue_style('votes-style', plugins_url('css/vote.css', __FILE__));
 }
-function voter_layout_top_area()
+function voter_layout_top_area($content)
 {
 	global $post,$bp;
 	$post_type = $post->post_type;
@@ -93,17 +93,18 @@ function voter_layout_top_area()
 	echo '<div class="vote alignright">';
 		echo voter_vote_link($post->ID,'up',$current_user_votes);
 			echo '<span class="vote-count-post">';
-			echo voter_get_post_votes($post->ID);
+			echo voter_get_post_votes_up($post->ID);
 			echo '</span>';
 		echo voter_vote_link($post->ID,'down',$current_user_votes);
 	echo '</div>';
+	return $content;
 }
 function voter_layout_bottom_area()
-{
+{	
 	global $post,$bp,$thread_template,$bbP,$forum_id;
-	$post_type = $post->post_type;	
+	$post_type = $post->post_type;
 	$comment_id = get_comment_ID();
-
+	
 	if($bp)
 	{
 		$check_url_for_topic = $bp->unfiltered_uri;
@@ -111,10 +112,9 @@ function voter_layout_bottom_area()
 		{
 			$topic_id = 1;
 		}
-	}	
-
-	//$topic_id = bbp_get_reply_id();	
-	//$topic_id = bbp_reply_topic_id();	
+	}
+	//$topic_id = bbp_get_reply_id();
+	//$topic_id = bbp_reply_topic_id();
 	//$topic_reply_id = bbp_get_reply_topic_id();
 	//echo "Topic ID :- " . $topic_id . "<br>";
 	//echo "Topic Reply ID :- " . $topic_reply_id . "<br>";
@@ -141,13 +141,13 @@ function voter_layout_bottom_area()
 			{
 				$user_id = get_current_user_id();
 				$component_name = "buddypress";
-				$type = $bp->current_component;
+				$type = "activity";
 				$item_id = $post->ID;
 				$activity_id = bp_get_activity_id();
 				$secondary_item_id = $activity_id;
-			}			
+			}
 			else if(isset($group_id) && $group_id != "" && (!isset($topic_id) && $topic_id == ""))
-			{			
+			{
 				$user_id = get_current_user_id();
 				$component_name = "buddypress";
 				$type = $bp->current_component;
@@ -213,7 +213,7 @@ function voter_layout_bottom_area()
 			{
 				$user_id = get_current_user_id();
 				$component_name = "buddypress";
-				$type = $bp->current_component;
+				$type = "activity";
 				$item_id = $post->ID;
 				$activity_id = bp_get_activity_id();
 				$secondary_item_id = $activity_id;
@@ -284,7 +284,7 @@ function voter_layout_bottom_area()
 			{				
 				$user_id = get_current_user_id();
 				$component_name = "buddypress";
-				$type = $bp->current_component;
+				$type = "activity";
 				$item_id = $post->ID;
 				$activity_id = bp_get_activity_id();
 				$secondary_item_id = $activity_id;
@@ -343,7 +343,7 @@ function voter_layout_bottom_area()
 	echo '<div class="vote alignright">';
 		echo voter_vote_link_bottom($post->ID,'up',$current_user_votes);
 			echo '<span class="vote-count-post">';
-			echo voter_get_post_votes($post->ID);
+			echo voter_get_post_votes_bottom($post->ID);
 			echo '</span>';
 		echo voter_vote_link_bottom($post->ID,'down',$current_user_votes);
 	echo '</div>';
@@ -351,7 +351,7 @@ function voter_layout_bottom_area()
 function voter_vote_link_bottom($post_id,$type,$user_votes = false)
 {
 		global $post,$bp,$thread_template;
-		
+				
 		if($bp)
 		{
 			$check_url_for_topic = $bp->unfiltered_uri;
@@ -373,7 +373,7 @@ function voter_vote_link_bottom($post_id,$type,$user_votes = false)
 			$member_id = $bp->displayed_user->id;
 			if(isset($activity_id) && $activity_id != "")
 			{
-				$post_type = $post->post_title;
+				$post_type = "activity";
 				$comment_id = bp_get_activity_id();
 			}
 			else if(isset($group_id) && $group_id != "" && (!isset($topic_id) && $topic_id == ""))
@@ -513,10 +513,6 @@ function voter_vote_link($post_id,$type,$user_votes = false)
 			echo '<a rel="nofollow" class="engagement ' . $class . '" href="' . $url . '"></a>';
 		}
 }
-function voter_get_post_votes($post_id)
-{
-	return $post_id;
-}
 function voter_get_current_user_votes_top_area($user_id,$component_name,$type,$item_id,$secondary_item_id)
 {
 	if(!is_user_logged_in())
@@ -603,6 +599,444 @@ function voter_function_giving_votes()
 		}
 	}
 }
+function voter_get_post_votes_up($post_id)
+{
+	global $post,$wpdb;
+	$post_type = $post->post_type;
+
+	if($post_type == "page")
+	{
+		if(bp_is_blog_page())
+		{
+			$item_id = 0;
+			$component_name = "blog";
+			$type = $post->post_type;
+			$secondary_item_id = $post->ID;
+			
+			$up_records = $wpdb->get_row("SELECT count(*) as count FROM ask_votes WHERE item_id = $item_id AND component = '".$component_name."' AND type = '".$type."' AND secondary_item_id = $secondary_item_id AND action = 'up'");
+			$down_records = $wpdb->get_row("SELECT count(*) as count FROM ask_votes WHERE item_id = $item_id AND component = '".$component_name."' AND type = '".$type."' AND secondary_item_id = $secondary_item_id AND action = 'down'");
+			
+			$total_records = $up_records->count - $down_records->count;
+		}
+		else
+		{
+			$group_id = $bp->groups->current_group->id;
+			if(isset($group_id) && $group_id != "")
+			{
+				$component_name = "buddypress";
+				$type = $post->post_title;
+				$item_id = $post->ID;
+				$secondary_item_id = $group_id;
+				
+				$up_records = $wpdb->get_row("SELECT count(*) as count FROM ask_votes WHERE item_id = $item_id AND component = '".$component_name."' AND type = '".$type."' AND secondary_item_id = $secondary_item_id AND action = 'up'");
+				$down_records = $wpdb->get_row("SELECT count(*) as count FROM ask_votes WHERE item_id = $item_id AND component = '".$component_name."' AND type = '".$type."' AND secondary_item_id = $secondary_item_id AND action = 'down'");
+			
+				$total_records = $up_records->count - $down_records->count;
+			}			
+		}
+	}
+	else if($post_type == "post")
+	{
+		if(bp_is_blog_page())
+		{
+			$item_id = 0;
+			$component_name = "blog";
+			$type = $post->post_type;
+			$secondary_item_id = $post->ID;
+			
+			$up_records = $wpdb->get_row("SELECT count(*) as count FROM ask_votes WHERE item_id = $item_id AND component = '".$component_name."' AND type = '".$type."' AND secondary_item_id = $secondary_item_id AND action = 'up'");
+			$down_records = $wpdb->get_row("SELECT count(*) as count FROM ask_votes WHERE item_id = $item_id AND component = '".$component_name."' AND type = '".$type."' AND secondary_item_id = $secondary_item_id AND action = 'down'");
+			
+			$total_records = $up_records->count - $down_records->count;
+		}
+		else
+		{
+			$group_id = $bp->groups->current_group->id;
+			if(isset($group_id) && $group_id != "")
+			{
+				$component_name = "buddypress";
+				$type = $post->post_title;
+				$item_id = $post->ID;
+				$secondary_item_id = $group_id;
+				
+				$up_records = $wpdb->get_row("SELECT count(*) as count FROM ask_votes WHERE item_id = $item_id AND component = '".$component_name."' AND type = '".$type."' AND secondary_item_id = $secondary_item_id AND action = 'up'");
+				$down_records = $wpdb->get_row("SELECT count(*) as count FROM ask_votes WHERE item_id = $item_id AND component = '".$component_name."' AND type = '".$type."' AND secondary_item_id = $secondary_item_id AND action = 'down'");
+			
+				$total_records = $up_records->count - $down_records->count;
+			}			
+		}		
+	}
+	else
+	{	
+		if(bp_is_blog_page())
+		{
+			$item_id = 0;
+			$component_name = "blog";
+			$type = $post->post_type;
+			$secondary_item_id = $post->ID;
+			
+			$up_records = $wpdb->get_row("SELECT count(*) as count FROM ask_votes WHERE item_id = $item_id AND component = '".$component_name."' AND type = '".$type."' AND secondary_item_id = $secondary_item_id AND action = 'up'");
+			$down_records = $wpdb->get_row("SELECT count(*) as count FROM ask_votes WHERE item_id = $item_id AND component = '".$component_name."' AND type = '".$type."' AND secondary_item_id = $secondary_item_id AND action = 'down'");
+			
+			$total_records = $up_records->count - $down_records->count;
+		}
+		else
+		{
+			$group_id = $bp->groups->current_group->id;
+			if(isset($group_id) && $group_id != "")
+			{
+				$component_name = "buddypress";
+				$type = $post->post_title;
+				$item_id = $post->ID;
+				$secondary_item_id = $group_id;
+				
+				$up_records = $wpdb->get_row("SELECT count(*) as count FROM ask_votes WHERE item_id = $item_id AND component = '".$component_name."' AND type = '".$type."' AND secondary_item_id = $secondary_item_id AND action = 'up'");
+				$down_records = $wpdb->get_row("SELECT count(*) as count FROM ask_votes WHERE item_id = $item_id AND component = '".$component_name."' AND type = '".$type."' AND secondary_item_id = $secondary_item_id AND action = 'down'");
+			
+				$total_records = $up_records->count - $down_records->count;
+			}			
+		}		
+	}
+	return $total_records;
+}
+function voter_get_post_votes_bottom($post_id)
+{
+	global $post,$bp,$thread_template,$bbP,$forum_id,$wpdb;
+	$post_type = $post->post_type;
+	$comment_id = get_comment_ID();
+			
+	if($bp)
+	{
+		$check_url_for_topic = $bp->unfiltered_uri;
+		if (in_array("topic", $check_url_for_topic))
+		{
+			$topic_id = 1;
+		}
+	}
+
+	if($post_type == "page")
+	{
+		if(bp_is_blog_page() && (!isset($topic_id) && $topic_id == ""))
+		{
+			$user_id = get_current_user_id();
+			$component_name = "blog";
+			$type = $post->post_type;
+			$item_id = $post->ID;
+			$secondary_item_id = $comment_id;
+			
+			$up_records = $wpdb->get_row("SELECT count(*) as count FROM ask_votes WHERE item_id = $item_id AND component = '".$component_name."' AND type = '".$type."' AND secondary_item_id = $secondary_item_id AND action = 'up'");
+			$down_records = $wpdb->get_row("SELECT count(*) as count FROM ask_votes WHERE item_id = $item_id AND component = '".$component_name."' AND type = '".$type."' AND secondary_item_id = $secondary_item_id AND action = 'down'");
+			
+			$total_records = $up_records->count - $down_records->count;			
+			
+		}
+		else
+		{
+			$activity_id = bp_get_activity_id();
+			$group_id = $bp->groups->current_group->id;
+			$member_id = $bp->displayed_user->id;
+
+			if(isset($activity_id) && $activity_id != "")
+			{
+				$user_id = get_current_user_id();
+				$component_name = "buddypress";
+				$type = "activity";
+				$item_id = $post->ID;
+				$activity_id = bp_get_activity_id();
+				$secondary_item_id = $activity_id;
+				
+				$up_records = $wpdb->get_row("SELECT count(*) as count FROM ask_votes WHERE component = '".$component_name."' AND type = '".$type."' AND secondary_item_id = $secondary_item_id AND action = 'up'");
+				$down_records = $wpdb->get_row("SELECT count(*) as count FROM ask_votes WHERE component = '".$component_name."' AND type = '".$type."' AND secondary_item_id = $secondary_item_id AND action = 'down'");
+				
+				$total_records = $up_records->count - $down_records->count;
+			}
+			else if(isset($group_id) && $group_id != "" && (!isset($topic_id) && $topic_id == ""))
+			{
+				$component_name = "buddypress";
+				$type = $bp->current_component;
+				$item_id = $post->ID;
+				$secondary_item_id = $group_id;
+				
+				$up_records = $wpdb->get_row("SELECT count(*) as count FROM ask_votes WHERE item_id = $item_id AND component = '".$component_name."' AND type = '".$type."' AND secondary_item_id = $secondary_item_id AND action = 'up'");
+				$down_records = $wpdb->get_row("SELECT count(*) as count FROM ask_votes WHERE item_id = $item_id AND component = '".$component_name."' AND type = '".$type."' AND secondary_item_id = $secondary_item_id AND action = 'down'");
+				
+				$total_records = $up_records->count - $down_records->count;
+			}
+			else if(isset($member_id) && $member_id != "")
+			{
+				if(strtolower($bp->current_component) == "profile")
+				{
+					$component_name = "buddypress";
+					$type = $bp->current_component;
+					$item_id = $post->ID;
+					$secondary_item_id = $member_id;
+										
+					$up_records = $wpdb->get_row("SELECT count(*) as count FROM ask_votes WHERE item_id = $item_id AND component = '".$component_name."' AND type = '".$type."' AND secondary_item_id = $secondary_item_id AND action = 'up'");
+					$down_records = $wpdb->get_row("SELECT count(*) as count FROM ask_votes WHERE item_id = $item_id AND component = '".$component_name."' AND type = '".$type."' AND secondary_item_id = $secondary_item_id AND action = 'down'");
+										
+					$total_records = $up_records->count - $down_records->count;
+				}
+				else if(strtolower($bp->current_component) == "messages")
+				{
+					$user_id = get_current_user_id();
+					$component_name = "buddypress";
+					$type = $bp->current_component;
+					$item_id = $post->ID;
+					$secondary_item_id = $thread_template->message->id;
+					
+					$up_records = $wpdb->get_row("SELECT count(*) as count FROM ask_votes WHERE item_id = $item_id AND component = '".$component_name."' AND type = '".$type."' AND secondary_item_id = $secondary_item_id AND action = 'up'");
+					$down_records = $wpdb->get_row("SELECT count(*) as count FROM ask_votes WHERE item_id = $item_id AND component = '".$component_name."' AND type = '".$type."' AND secondary_item_id = $secondary_item_id AND action = 'down'");
+										
+					$total_records = $up_records->count - $down_records->count;
+				}
+			}
+			else if(isset($topic_id) && $topic_id != "")
+			{
+				$user_id = get_current_user_id();
+				$component_name = "buddypress";
+				$type = "forum";
+				$item_id = $post->ID;
+				$secondary_item_id = $post->ID;
+				
+				$up_records = $wpdb->get_row("SELECT count(*) as count FROM ask_votes WHERE item_id = $item_id AND component = '".$component_name."' AND type = '".$type."' AND secondary_item_id = $secondary_item_id AND action = 'up'");
+				$down_records = $wpdb->get_row("SELECT count(*) as count FROM ask_votes WHERE item_id = $item_id AND component = '".$component_name."' AND type = '".$type."' AND secondary_item_id = $secondary_item_id AND action = 'down'");
+										
+				$total_records = $up_records->count - $down_records->count;
+				
+			}
+			else
+			{
+				// bp_get_member_user_id
+				$user_id = get_current_user_id();
+				$component_name = "buddypress";
+				$type = $post->post_title;
+				$item_id = $post->ID;
+				$member_id = get_current_user_id();
+				$secondary_item_id = $member_id;
+				
+				$up_records = $wpdb->get_row("SELECT count(*) as count FROM ask_votes WHERE item_id = $item_id AND component = '".$component_name."' AND type = '".$type."' AND secondary_item_id = $secondary_item_id AND action = 'up'");
+				$down_records = $wpdb->get_row("SELECT count(*) as count FROM ask_votes WHERE item_id = $item_id AND component = '".$component_name."' AND type = '".$type."' AND secondary_item_id = $secondary_item_id AND action = 'down'");
+										
+				$total_records = $up_records->count - $down_records->count;
+				
+			}
+		}
+	}
+	else if($post_type == "post" && (!isset($topic_id) && $topic_id == ""))
+	{
+		if(bp_is_blog_page())
+		{
+			$component_name = "blog";
+			$type = $post->post_type;
+			$item_id = $post->ID;
+			$secondary_item_id = $comment_id;
+			
+			$up_records = $wpdb->get_row("SELECT count(*) as count FROM ask_votes WHERE item_id = $item_id AND component = '".$component_name."' AND type = '".$type."' AND secondary_item_id = $secondary_item_id AND action = 'up'");
+			$down_records = $wpdb->get_row("SELECT count(*) as count FROM ask_votes WHERE item_id = $item_id AND component = '".$component_name."' AND type = '".$type."' AND secondary_item_id = $secondary_item_id AND action = 'down'");
+			
+			$total_records = $up_records->count - $down_records->count;
+		}
+		else
+		{
+			$activity_id = bp_get_activity_id();
+			$group_id = $bp->groups->current_group->id;
+			$member_id = $bp->displayed_user->id;
+						
+			if(isset($activity_id) && $activity_id != "")
+			{
+				$user_id = get_current_user_id();
+				$component_name = "buddypress";
+				$type = "activity";
+				$item_id = $post->ID;
+				$activity_id = bp_get_activity_id();
+				$secondary_item_id = $activity_id;
+				
+				$up_records = $wpdb->get_row("SELECT count(*) as count FROM ask_votes WHERE component = '".$component_name."' AND type = '".$type."' AND secondary_item_id = $secondary_item_id AND action = 'up'");
+				$down_records = $wpdb->get_row("SELECT count(*) as count FROM ask_votes WHERE component = '".$component_name."' AND type = '".$type."' AND secondary_item_id = $secondary_item_id AND action = 'down'");
+				
+				$total_records = $up_records->count - $down_records->count;				
+			}
+			else if(isset($group_id) && $group_id != "" && (!isset($topic_id) && $topic_id == ""))
+			{
+				$component_name = "buddypress";
+				$type = $bp->current_component;
+				$item_id = $post->ID;
+				$secondary_item_id = $group_id;
+				
+				$up_records = $wpdb->get_row("SELECT count(*) as count FROM ask_votes WHERE item_id = $item_id AND component = '".$component_name."' AND type = '".$type."' AND secondary_item_id = $secondary_item_id AND action = 'up'");
+				$down_records = $wpdb->get_row("SELECT count(*) as count FROM ask_votes WHERE item_id = $item_id AND component = '".$component_name."' AND type = '".$type."' AND secondary_item_id = $secondary_item_id AND action = 'down'");
+				
+				$total_records = $up_records->count - $down_records->count;
+			}
+			else if(isset($member_id) && $member_id != "")
+			{
+				if(strtolower($bp->current_component) == "profile")
+				{
+					$user_id = get_current_user_id();
+					$component_name = "buddypress";
+					$type = $bp->current_component;
+					$item_id = $post->ID;
+					$secondary_item_id = $member_id;
+					
+					$up_records = $wpdb->get_row("SELECT count(*) as count FROM ask_votes WHERE item_id = $item_id AND component = '".$component_name."' AND type = '".$type."' AND secondary_item_id = $secondary_item_id AND action = 'up'");
+					$down_records = $wpdb->get_row("SELECT count(*) as count FROM ask_votes WHERE item_id = $item_id AND component = '".$component_name."' AND type = '".$type."' AND secondary_item_id = $secondary_item_id AND action = 'down'");
+										
+					$total_records = $up_records->count - $down_records->count;
+				}
+				else if(strtolower($bp->current_component) == "messages")
+				{
+					$user_id = get_current_user_id();
+					$component_name = "buddypress";
+					$type = $bp->current_component;
+					$item_id = $post->ID;
+					$secondary_item_id = $thread_template->message->id;
+
+					$up_records = $wpdb->get_row("SELECT count(*) as count FROM ask_votes WHERE item_id = $item_id AND component = '".$component_name."' AND type = '".$type."' AND secondary_item_id = $secondary_item_id AND action = 'up'");
+					$down_records = $wpdb->get_row("SELECT count(*) as count FROM ask_votes WHERE item_id = $item_id AND component = '".$component_name."' AND type = '".$type."' AND secondary_item_id = $secondary_item_id AND action = 'down'");
+										
+					$total_records = $up_records->count - $down_records->count;					
+				}
+			}
+			else if(isset($topic_id) && $topic_id != "")
+			{
+				$user_id = get_current_user_id();
+				$component_name = "buddypress";
+				$type = "forum";
+				$item_id = $post->ID;
+				$secondary_item_id = $post->ID;
+				
+				$up_records = $wpdb->get_row("SELECT count(*) as count FROM ask_votes WHERE item_id = $item_id AND component = '".$component_name."' AND type = '".$type."' AND secondary_item_id = $secondary_item_id AND action = 'up'");
+				$down_records = $wpdb->get_row("SELECT count(*) as count FROM ask_votes WHERE item_id = $item_id AND component = '".$component_name."' AND type = '".$type."' AND secondary_item_id = $secondary_item_id AND action = 'down'");
+										
+				$total_records = $up_records->count - $down_records->count;				
+			}
+			else
+			{
+				// bp_get_member_user_id
+				$user_id = get_current_user_id();
+				$component_name = "buddypress";
+				$type = $post->post_title;
+				$item_id = $post->ID;
+				$member_id = get_current_user_id();
+				$secondary_item_id = $member_id;
+				
+				$up_records = $wpdb->get_row("SELECT count(*) as count FROM ask_votes WHERE item_id = $item_id AND component = '".$component_name."' AND type = '".$type."' AND secondary_item_id = $secondary_item_id AND action = 'up'");
+				$down_records = $wpdb->get_row("SELECT count(*) as count FROM ask_votes WHERE item_id = $item_id AND component = '".$component_name."' AND type = '".$type."' AND secondary_item_id = $secondary_item_id AND action = 'down'");
+										
+				$total_records = $up_records->count - $down_records->count;
+				
+			}
+		}
+	}
+	else
+	{
+		if(bp_is_blog_page() && (!isset($topic_id) && $topic_id == ""))
+		{
+			$component_name = "blog";
+			$type = $post->post_type;
+			$item_id = $post->ID;
+			$secondary_item_id = $comment_id;
+			
+			$up_records = $wpdb->get_row("SELECT count(*) as count FROM ask_votes WHERE item_id = $item_id AND component = '".$component_name."' AND type = '".$type."' AND secondary_item_id = $secondary_item_id AND action = 'up'");
+			$down_records = $wpdb->get_row("SELECT count(*) as count FROM ask_votes WHERE item_id = $item_id AND component = '".$component_name."' AND type = '".$type."' AND secondary_item_id = $secondary_item_id AND action = 'down'");
+			
+			$total_records = $up_records->count - $down_records->count;
+		}
+		else
+		{
+			$activity_id = bp_get_activity_id();
+			$group_id = $bp->groups->current_group->id;
+			$member_id = $bp->displayed_user->id;
+			if(isset($activity_id) && $activity_id != "")
+			{
+				$component_name = "buddypress";
+				$type = "activity";
+				$item_id = $post->ID;
+				$activity_id = bp_get_activity_id();
+				$secondary_item_id = $activity_id;
+				
+				$up_records = $wpdb->get_row("SELECT count(*) as count FROM ask_votes WHERE component = '".$component_name."' AND type = '".$type."' AND secondary_item_id = $secondary_item_id AND action = 'up'");
+				$down_records = $wpdb->get_row("SELECT count(*) as count FROM ask_votes WHERE component = '".$component_name."' AND type = '".$type."' AND secondary_item_id = $secondary_item_id AND action = 'down'");
+				
+				$total_records = $up_records->count - $down_records->count;
+			}
+			else if(isset($group_id) && $group_id != "" && (!isset($topic_id) && $topic_id == ""))
+			{
+				$component_name = "buddypress";
+				$type = $bp->current_component;
+				$item_id = $post->ID;
+				$secondary_item_id = $group_id;
+				
+				$up_records = $wpdb->get_row("SELECT count(*) as count FROM ask_votes WHERE item_id = $item_id AND component = '".$component_name."' AND type = '".$type."' AND secondary_item_id = $secondary_item_id AND action = 'up'");
+				$down_records = $wpdb->get_row("SELECT count(*) as count FROM ask_votes WHERE item_id = $item_id AND component = '".$component_name."' AND type = '".$type."' AND secondary_item_id = $secondary_item_id AND action = 'down'");
+				
+				$total_records = $up_records->count - $down_records->count;
+			}
+			else if(isset($member_id) && $member_id != "")
+			{
+				if(strtolower($bp->current_component) == "profile")
+				{
+					$user_id = get_current_user_id();
+					$component_name = "buddypress";
+					$type = $bp->current_component;
+					$item_id = $post->ID;
+					$secondary_item_id = $member_id;
+					
+					$up_records = $wpdb->get_row("SELECT count(*) as count FROM ask_votes WHERE item_id = $item_id AND component = '".$component_name."' AND type = '".$type."' AND secondary_item_id = $secondary_item_id AND action = 'up'");
+					$down_records = $wpdb->get_row("SELECT count(*) as count FROM ask_votes WHERE item_id = $item_id AND component = '".$component_name."' AND type = '".$type."' AND secondary_item_id = $secondary_item_id AND action = 'down'");
+										
+					$total_records = $up_records->count - $down_records->count;
+
+				}
+				else if(strtolower($bp->current_component) == "messages")
+				{
+					$user_id = get_current_user_id();
+					$component_name = "buddypress";
+					$type = $bp->current_component;
+					$item_id = $post->ID;
+					$secondary_item_id = $thread_template->message->id;
+					
+					$up_records = $wpdb->get_row("SELECT count(*) as count FROM ask_votes WHERE item_id = $item_id AND component = '".$component_name."' AND type = '".$type."' AND secondary_item_id = $secondary_item_id AND action = 'up'");
+					$down_records = $wpdb->get_row("SELECT count(*) as count FROM ask_votes WHERE item_id = $item_id AND component = '".$component_name."' AND type = '".$type."' AND secondary_item_id = $secondary_item_id AND action = 'down'");
+										
+					$total_records = $up_records->count - $down_records->count;					
+				}
+			}
+			else if(isset($topic_id) && $topic_id != "")
+			{
+				$user_id = get_current_user_id();
+				$component_name = "buddypress";
+				$type = "forum";
+				$item_id = $post->ID;
+				$secondary_item_id = $post->ID;
+				
+				$up_records = $wpdb->get_row("SELECT count(*) as count FROM ask_votes WHERE item_id = $item_id AND component = '".$component_name."' AND type = '".$type."' AND secondary_item_id = $secondary_item_id AND action = 'up'");
+				$down_records = $wpdb->get_row("SELECT count(*) as count FROM ask_votes WHERE item_id = $item_id AND component = '".$component_name."' AND type = '".$type."' AND secondary_item_id = $secondary_item_id AND action = 'down'");
+										
+				$total_records = $up_records->count - $down_records->count;
+				
+			}
+			else
+			{
+				// bp_get_member_user_id
+				$user_id = get_current_user_id();
+				$component_name = "buddypress";
+				$type = $post->post_title;
+				$item_id = $post->ID;
+				$member_id = get_current_user_id();
+				$secondary_item_id = $member_id;
+				
+				$up_records = $wpdb->get_row("SELECT count(*) as count FROM ask_votes WHERE item_id = $item_id AND component = '".$component_name."' AND type = '".$type."' AND secondary_item_id = $secondary_item_id AND action = 'up'");
+				$down_records = $wpdb->get_row("SELECT count(*) as count FROM ask_votes WHERE item_id = $item_id AND component = '".$component_name."' AND type = '".$type."' AND secondary_item_id = $secondary_item_id AND action = 'down'");
+										
+				$total_records = $up_records->count - $down_records->count;
+				
+			}
+		}
+	}
+	return $total_records;
+}
+
 add_action('wp_enqueue_scripts', 'add_stylesheet_for_votes_layout');
 add_filter('comment_reply_link','voter_layout_bottom_area');
 add_filter('the_content','voter_layout_top_area');
@@ -616,4 +1050,5 @@ add_action('bp_after_group_header','voter_layout_bottom_area');
 add_action('bp_after_message_content','voter_layout_bottom_area');
 //add_action('bp_group_forum_post_meta','voter_layout_bottom_area');
 add_action('bbp_theme_before_reply_author_details','voter_layout_bottom_area');
+//add_filter( 'attachment_fields_to_save', 'filter_function_name', 10, 2 );
 ?>
