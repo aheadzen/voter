@@ -1,0 +1,38 @@
+.engagement
+{
+ background: #ccc url('../images/buttons.png') no-repeat;
+ height: 35px;
+ display: block;
+}
+.vote
+{
+ width: 40px;
+}
+.vote .alignright {
+    float: right;
+}
+.vote-up-off
+{
+ background-position:0% 0%; 
+}
+.vote-up-on
+{
+ background-position:0% -35px;
+ cursor: default;
+}
+.vote-down-off
+{
+ background-position:0% -70px; 
+}
+.vote-down-on
+{
+ background-position:0% -105px; 
+ cursor: default;
+}
+.vote-count-post
+{
+ font-size: 2em;
+ text-align: center;
+ color: #999;
+ margin: 0.5em;
+}
