@@ -8,9 +8,12 @@
     Author URI: http://www.ask-oracle.com
 */
 include(dirname(__FILE__).'/class_frontend_voter.php');
+include(dirname(__FILE__).'/class_backend_voter.php');
 $frontend_voter = new frontendvoter();
+$backend_voter = new backendvoter();
 register_activation_hook(__FILE__, array($frontend_voter, 'voter_install'));
 register_deactivation_hook(__FILE__, array($frontend_voter, 'voter_uninstall'));
+add_action('admin_menu', array($backend_voter, 'voter_admin_menu'));
 add_action('wp_enqueue_scripts', array($frontend_voter, 'voter_add_custom_scripts'));
 add_filter('the_content', array($frontend_voter, 'voter_add_votes'));
 add_filter('comment_reply_link', array($frontend_voter, 'voter_add_votes'));
