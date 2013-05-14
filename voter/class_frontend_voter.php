@@ -1,7 +1,9 @@
 <?php
-class frontendvoter
+class frontendvoter extends backendvoter
 {
-	var $url;  
+	var $url;
+	var $status = false;
+	
 	function voter_add_custom_scripts()
 	{
 		wp_enqueue_script('custom-voter-script', plugins_url('js/voter.js', __FILE__), array('jquery'));
@@ -64,11 +66,20 @@ class frontendvoter
 				{
 					$item_id = $post->ID;
 					$secondary_item_id = $comment_id;
+					if(get_option(frontendvoter::VOTER_OPTION_FOR_COMMENTS) == "on")
+					{
+						$this->status = true;
+					}
+					
 				}
 				else
 				{
 					$item_id = 0;
 					$secondary_item_id = $post->ID;
+					if(get_option(frontendvoter::VOTER_OPTION_FOR_PAGES) == "on")
+					{
+						$this->status = true;
+					}					
 				}
 				$current_user_votes = $wpdb->get_results("SELECT secondary_item_id,id,user_id,component,type,action,item_id FROM `".$table_prefix."ask_votes` WHERE user_id = $user_id AND item_id = $item_id AND component = '".$component_name."' AND type = '".$type."' AND secondary_item_id = $secondary_item_id" , OBJECT_K );
 			}
@@ -86,7 +97,10 @@ class frontendvoter
 					$item_id = $post->ID;
 					$activity_id = bp_get_activity_id();
 					$secondary_item_id = $activity_id;
-					
+					if(get_option(frontendvoter::VOTER_OPTION_FOR_BP_ACTIVITY) == "on")
+					{
+						$this->status = true;
+					}
 					$current_user_votes = $wpdb->get_results("SELECT secondary_item_id,id,user_id,component,type,action,item_id FROM `".$table_prefix."ask_votes` WHERE user_id = $user_id AND component = '".$component_name."' AND type = '".$type."' AND secondary_item_id = $secondary_item_id" , OBJECT_K );
 				}
 				else if(isset($group_id) && $group_id != "" && (!isset($topic_id) && $topic_id == ""))
@@ -95,8 +109,11 @@ class frontendvoter
 					$component_name = "buddypress";
 					$type = $bp->current_component;
 					$item_id = $post->ID;
-					$secondary_item_id = $group_id;
-					
+					$secondary_item_id = $group_id;					
+					if(get_option(frontendvoter::VOTER_OPTION_FOR_BP_GROUP) == "on")
+					{
+						$this->status = true;
+					}
 					$current_user_votes = $wpdb->get_results("SELECT secondary_item_id,id,user_id,component,type,action,item_id FROM `".$table_prefix."ask_votes` WHERE user_id = $user_id AND item_id = $item_id AND component = '".$component_name."' AND type = '".$type."' AND secondary_item_id = $secondary_item_id" , OBJECT_K );
 				}
 				else if(isset($member_id) && $member_id != "")
@@ -107,7 +124,11 @@ class frontendvoter
 						$component_name = "buddypress";
 						$type = $bp->current_component;
 						$item_id = $post->ID;
-						$secondary_item_id = $member_id;
+						$secondary_item_id = $member_id;						
+						if(get_option(frontendvoter::VOTER_OPTION_FOR_BP_PROFILE) == "on")
+						{
+							$this->status = true;
+						}
 						$current_user_votes = $wpdb->get_results("SELECT secondary_item_id,id,user_id,component,type,action,item_id FROM `".$table_prefix."ask_votes` WHERE user_id = $user_id AND item_id = $item_id AND component = '".$component_name."' AND type = '".$type."' AND secondary_item_id = $secondary_item_id" , OBJECT_K );
 					}
 					else if(strtolower($bp->current_component) == "messages")
@@ -117,6 +138,10 @@ class frontendvoter
 						$type = $bp->current_component;
 						$item_id = $post->ID;
 						$secondary_item_id = $thread_template->message->id;
+						if(get_option(frontendvoter::VOTER_OPTION_FOR_BP_MESSAGE) == "on")
+						{
+							$this->status = true;
+						}
 						$current_user_votes = $wpdb->get_results("SELECT secondary_item_id,id,user_id,component,type,action,item_id FROM `".$table_prefix."ask_votes` WHERE user_id = $user_id AND item_id = $item_id AND component = '".$component_name."' AND type = '".$type."' AND secondary_item_id = $secondary_item_id" , OBJECT_K );
 					}
 				}
@@ -127,6 +152,10 @@ class frontendvoter
 					$type = "forum";
 					$item_id = $post->ID;
 					$secondary_item_id = $post->ID;
+					if(get_option(frontendvoter::VOTER_OPTION_FOR_BP_FORUM) == "on")
+					{
+						$this->status = true;
+					}
 					$current_user_votes = $wpdb->get_results("SELECT secondary_item_id,id,user_id,component,type,action,item_id FROM `".$table_prefix."ask_votes` WHERE user_id = $user_id AND item_id = $item_id AND component = '".$component_name."' AND type = '".$type."' AND secondary_item_id = $secondary_item_id" , OBJECT_K );
 				}
 				else
@@ -153,11 +182,19 @@ class frontendvoter
 				{
 					$item_id = $post->ID;
 					$secondary_item_id = $comment_id;
+					if(get_option(frontendvoter::VOTER_OPTION_FOR_COMMENTS) == "on")
+					{
+						$this->status = true;
+					}					
 				}
 				else
 				{
 					$item_id = 0;
 					$secondary_item_id = $post->ID;
+					if(get_option(frontendvoter::VOTER_OPTION_FOR_PAGES) == "on")
+					{
+						$this->status = true;
+					}
 				}
 				$current_user_votes = $wpdb->get_results("SELECT secondary_item_id,id,user_id,component,type,action,item_id FROM `".$table_prefix."ask_votes` WHERE user_id = $user_id AND item_id = $item_id AND component = '".$component_name."' AND type = '".$type."' AND secondary_item_id = $secondary_item_id" , OBJECT_K );
 			}
@@ -176,6 +213,10 @@ class frontendvoter
 					$activity_id = bp_get_activity_id();
 					$secondary_item_id = $activity_id;
 					$current_user_votes = $wpdb->get_results("SELECT secondary_item_id,id,user_id,component,type,action,item_id FROM `".$table_prefix."ask_votes` WHERE user_id = $user_id AND component = '".$component_name."' AND type = '".$type."' AND secondary_item_id = $secondary_item_id" , OBJECT_K );
+					if(get_option(frontendvoter::VOTER_OPTION_FOR_BP_ACTIVITY) == "on")
+					{
+						$this->status = true;
+					}
 				}			
 				else if(isset($group_id) && $group_id != "" && (!isset($topic_id) && $topic_id == ""))
 				{			
@@ -185,6 +226,10 @@ class frontendvoter
 					$item_id = $post->ID;
 					$secondary_item_id = $group_id;
 					$current_user_votes = $wpdb->get_results("SELECT secondary_item_id,id,user_id,component,type,action,item_id FROM `".$table_prefix."ask_votes` WHERE user_id = $user_id AND item_id = $item_id AND component = '".$component_name."' AND type = '".$type."' AND secondary_item_id = $secondary_item_id" , OBJECT_K );
+					if(get_option(frontendvoter::VOTER_OPTION_FOR_BP_GROUP) == "on")
+					{
+						$this->status = true;
+					}					
 				}
 				else if(isset($member_id) && $member_id != "")
 				{
@@ -196,6 +241,10 @@ class frontendvoter
 						$item_id = $post->ID;
 						$secondary_item_id = $member_id;
 						$current_user_votes = $wpdb->get_results("SELECT secondary_item_id,id,user_id,component,type,action,item_id FROM `".$table_prefix."ask_votes` WHERE user_id = $user_id AND item_id = $item_id AND component = '".$component_name."' AND type = '".$type."' AND secondary_item_id = $secondary_item_id" , OBJECT_K );
+						if(get_option(frontendvoter::VOTER_OPTION_FOR_BP_PROFILE) == "on")
+						{
+							$this->status = true;
+						}
 					}
 					else if(strtolower($bp->current_component) == "messages")
 					{
@@ -204,7 +253,11 @@ class frontendvoter
 						$type = $bp->current_component;
 						$item_id = $post->ID;
 						$secondary_item_id = $thread_template->message->id;
-						$current_user_votes = $wpdb->get_results("SELECT secondary_item_id,id,user_id,component,type,action,item_id FROM `".$table_prefix."ask_votes` WHERE user_id = $user_id AND item_id = $item_id AND component = '".$component_name."' AND type = '".$type."' AND secondary_item_id = $secondary_item_id" , OBJECT_K );						
+						$current_user_votes = $wpdb->get_results("SELECT secondary_item_id,id,user_id,component,type,action,item_id FROM `".$table_prefix."ask_votes` WHERE user_id = $user_id AND item_id = $item_id AND component = '".$component_name."' AND type = '".$type."' AND secondary_item_id = $secondary_item_id" , OBJECT_K );
+						if(get_option(frontendvoter::VOTER_OPTION_FOR_BP_MESSAGE) == "on")
+						{
+							$this->status = true;
+						}
 					}
 				}
 				else if(isset($topic_id) && $topic_id != "")
@@ -215,6 +268,10 @@ class frontendvoter
 					$item_id = $post->ID;
 					$secondary_item_id = $post->ID;
 					$current_user_votes = $wpdb->get_results("SELECT secondary_item_id,id,user_id,component,type,action,item_id FROM `".$table_prefix."ask_votes` WHERE user_id = $user_id AND item_id = $item_id AND component = '".$component_name."' AND type = '".$type."' AND secondary_item_id = $secondary_item_id" , OBJECT_K );
+					if(get_option(frontendvoter::VOTER_OPTION_FOR_BP_FORUM) == "on")
+					{
+						$this->status = true;
+					}
 				}
 				else
 				{
@@ -241,13 +298,21 @@ class frontendvoter
 				{
 					$item_id = $post->ID;
 					$secondary_item_id = $comment_id;
+					if(get_option(frontendvoter::VOTER_OPTION_FOR_COMMENTS) == "on")
+					{
+						$this->status = true;
+					}					
 				}
 				else
 				{
 					$item_id = 0;
 					$secondary_item_id = $post->ID;
+					if(get_option(frontendvoter::VOTER_OPTION_FOR_POST_TYPE) == "on")
+					{
+						$this->status = true;
+					}
 				}
-				$current_user_votes = $wpdb->get_results("SELECT secondary_item_id,id,user_id,component,type,action,item_id FROM `".$table_prefix."ask_votes` WHERE user_id = $user_id AND item_id = $item_id AND component = '".$component_name."' AND type = '".$type."' AND secondary_item_id = $secondary_item_id" , OBJECT_K );
+				$current_user_votes = $wpdb->get_results("SELECT secondary_item_id,id,user_id,component,type,action,item_id FROM `".$table_prefix."ask_votes` WHERE user_id = $user_id AND item_id = $item_id AND component = '".$component_name."' AND type = '".$type."' AND secondary_item_id = $secondary_item_id" , OBJECT_K );				
 			}
 			else
 			{
@@ -263,6 +328,10 @@ class frontendvoter
 					$activity_id = bp_get_activity_id();
 					$secondary_item_id = $activity_id;
 					$current_user_votes = $wpdb->get_results("SELECT secondary_item_id,id,user_id,component,type,action,item_id FROM `".$table_prefix."ask_votes` WHERE user_id = $user_id AND component = '".$component_name."' AND type = '".$type."' AND secondary_item_id = $secondary_item_id" , OBJECT_K );
+					if(get_option(frontendvoter::VOTER_OPTION_FOR_BP_ACTIVITY) == "on")
+					{
+						$this->status = true;
+					}					
 				}			
 				else if(isset($group_id) && $group_id != "" && (!isset($topic_id) && $topic_id == ""))
 				{
@@ -272,6 +341,10 @@ class frontendvoter
 					$item_id = $post->ID;
 					$secondary_item_id = $group_id;
 					$current_user_votes = $wpdb->get_results("SELECT secondary_item_id,id,user_id,component,type,action,item_id FROM `".$table_prefix."ask_votes` WHERE user_id = $user_id AND item_id = $item_id AND component = '".$component_name."' AND type = '".$type."' AND secondary_item_id = $secondary_item_id" , OBJECT_K );
+					if(get_option(frontendvoter::VOTER_OPTION_FOR_BP_GROUP) == "on")
+					{
+						$this->status = true;
+					}
 				}
 				else if(isset($member_id) && $member_id != "")
 				{
@@ -283,6 +356,10 @@ class frontendvoter
 						$item_id = $post->ID;
 						$secondary_item_id = $member_id;
 						$current_user_votes = $wpdb->get_results("SELECT secondary_item_id,id,user_id,component,type,action,item_id FROM `".$table_prefix."ask_votes` WHERE user_id = $user_id AND item_id = $item_id AND component = '".$component_name."' AND type = '".$type."' AND secondary_item_id = $secondary_item_id" , OBJECT_K );
+						if(get_option(frontendvoter::VOTER_OPTION_FOR_BP_PROFILE) == "on")
+						{
+							$this->status = true;
+						}
 					}
 					else if(strtolower($bp->current_component) == "messages")
 					{
@@ -292,6 +369,10 @@ class frontendvoter
 						$item_id = $post->ID;
 						$secondary_item_id = $thread_template->message->id;
 						$current_user_votes = $wpdb->get_results("SELECT secondary_item_id,id,user_id,component,type,action,item_id FROM `".$table_prefix."ask_votes` WHERE user_id = $user_id AND item_id = $item_id AND component = '".$component_name."' AND type = '".$type."' AND secondary_item_id = $secondary_item_id" , OBJECT_K );
+						if(get_option(frontendvoter::VOTER_OPTION_FOR_BP_MESSAGE) == "on")
+						{
+							$this->status = true;
+						}
 					}
 				}
 				else if(isset($topic_id) && $topic_id != "")
@@ -302,6 +383,10 @@ class frontendvoter
 					$item_id = $post->ID;
 					$secondary_item_id = $post->ID;
 					$current_user_votes = $wpdb->get_results("SELECT secondary_item_id,id,user_id,component,type,action,item_id FROM `".$table_prefix."ask_votes` WHERE user_id = $user_id AND item_id = $item_id AND component = '".$component_name."' AND type = '".$type."' AND secondary_item_id = $secondary_item_id" , OBJECT_K );
+					if(get_option(frontendvoter::VOTER_OPTION_FOR_BP_FORUM) == "on")
+					{
+						$this->status = true;
+					}
 				}
 				else
 				{
@@ -317,13 +402,16 @@ class frontendvoter
 			}			
 		}
 		
-		echo '<div class="vote alignright">';
-			echo $this->voter_vote_link($post->ID,'up',$current_user_votes);
-				echo '<span class="vote-count-post">';
-				echo $this->voter_get_total_votes($post->ID);
-				echo '</span>';
-			echo $this->voter_vote_link($post->ID,'down',$current_user_votes);
-		echo '</div>';
+		if($this->status)
+		{
+			echo '<div class="vote alignright">';
+				echo $this->voter_vote_link($post->ID,'up',$current_user_votes);
+					echo '<span class="vote-count-post">';
+					echo $this->voter_get_total_votes($post->ID);
+					echo '</span>';
+				echo $this->voter_vote_link($post->ID,'down',$current_user_votes);
+			echo '</div>';
+		}
 		
 		return $content;
 	}

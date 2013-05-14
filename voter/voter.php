@@ -7,8 +7,9 @@
     Version: 1.0
     Author URI: http://www.ask-oracle.com
 */
-include(dirname(__FILE__).'/class_frontend_voter.php');
+
 include(dirname(__FILE__).'/class_backend_voter.php');
+include(dirname(__FILE__).'/class_frontend_voter.php');
 $frontend_voter = new frontendvoter();
 $backend_voter = new backendvoter();
 register_activation_hook(__FILE__, array($frontend_voter, 'voter_install'));
